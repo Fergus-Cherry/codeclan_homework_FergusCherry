@@ -1,0 +1,116 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(CodeClanData)
+library(tidyverse)
+```
+
+
+1.
+
+```{r}
+drinks_content
+View(drinks_content)
+dim(drinks_content)
+ncol(drinks_content)
+nrow(drinks_content)
+names(drinks_content)
+```
+a mix of double and character data types
+
+2.
+```{r}
+drinks_content %>% 
+  select(Beverage_category, Beverage, Beverage_prep, Calories) %>% 
+  filter(!is.na(Calories))
+```
+
+3.
+
+```{r}
+drinks_content %>% 
+  mutate(calorie_diff = Calories - 135) %>% 
+  select(Beverage_category:Calories)
+```
+
+4. Most of the beverage categories average between 100-300 calories, with one outlier of 'coffee' having an average of ~4 calories.
+'Coffee' has the lowest calorie count and smoothies and frappucinno's have the highest calorie counts.
+
+```{r}
+drinks_content %>% 
+  group_by(Beverage_category) %>% 
+  summarise(avg_calories = mean(Calories))
+
+# Highest 3 by mean calories
+drinks_content %>% 
+  group_by(Beverage_category) %>% 
+  summarise(avg_calories = mean(Calories)) %>% 
+  arrange(desc(avg_calories)) %>% 
+  head(3)
+
+# Lowest 3 by mean calories
+drinks_content %>% 
+  group_by(Beverage_category) %>% 
+  summarise(avg_calories = mean(Calories)) %>% 
+  arrange(avg_calories) %>% 
+  head(3)
+```
+
+5.The beverage prep types average between 5-300 calories.
+Solo and Doppio have the lowest calorie counts and Whole Milk and Venti Nonfat Milk have the highest calorie counts.
+
+
+```{r}
+drinks_content %>% 
+  group_by(Beverage_prep) %>% 
+  summarise(avg_calories = mean(Calories))
+
+# Highest 3 by mean calories
+drinks_content %>% 
+  group_by(Beverage_prep) %>% 
+  summarise(avg_calories = mean(Calories)) %>% 
+  arrange(desc(avg_calories)) %>% 
+  head(3)
+
+# Lowest 3 by mean calories
+drinks_content %>% 
+  group_by(Beverage_prep) %>% 
+  summarise(avg_calories = mean(Calories)) %>% 
+  arrange(avg_calories) %>% 
+  head(3)
+```
+
+6.
+
+```{r}
+avg_calories <- drinks_content %>% 
+  summarise(avg_calories = mean(Calories)) %>% 
+  pull(avg_calories)
+
+drinks_content %>% 
+  group_by(Beverage_prep) %>% 
+  summarise(mean_calories = mean(Calories)) %>% 
+  filter(mean_calories > avg_calories)
+```
+
+```{r}
+# Forgive me for this, I wanted to see how bad it could get without variables or %>% 
+# This took longer than the rest of the homework combined.
+filter(summarise(group_by(drinks_content, Beverage_prep), mean_calories = mean(Calories)), mean_calories  > pull(summarise(drinks_content, avg_calories = mean(Calories)), avg_calories))
+```
+
+
+
+7.A Short Brewed Coffee, which is Coffee, has the fewest calories of any 'Coffee', having 3 calories.
+
+```{r}
+drinks_content %>% 
+  filter(Beverage_category == "Coffee") %>% 
+  select(Beverage_category, Beverage, Beverage_prep, Calories) %>% 
+  arrange(Calories) %>% 
+  head(1)
+```
+
