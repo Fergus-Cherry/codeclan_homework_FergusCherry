@@ -1,0 +1,147 @@
+---
+title: "Fergus Cherry Data Analysis Homework Day 3"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(CodeClanData)
+library(janitor)
+library(readr)
+library(skimr)
+```
+
+```{r}
+movies = read_csv("data/movies.csv")
+#view(movies)
+```
+
+```{r}
+skim(movies)
+```
+
+## MVP
+
+1. 7 character columns, 6 numeric columns
+2 missing runtime values are probably publicly available and could be added
+1 missing release date also could probably be found
+the missing homepage, overview and tagline values can be ignored when evaluating the numeric values of thos entries.
+could compare average budgets, revenues and popularities for various language groups
+could compare how budget correlates with revenue and popularity
+could check if revenue compares with popularity
+
+
+
+2.
+
+```{r}
+movies %>% 
+  select(original_title, title) %>% 
+  filter(original_title != title)
+```
+
+```{r}
+movies_selected <- movies %>% 
+  select(title, runtime, budget)
+```
+
+3. 2 missing runtimes, no other missing values
+
+```{r}
+movies_selected %>% 
+  summarise(across(.cols = everything(), .fns = ~sum(is.na(.))))
+```
+
+
+4.37 have missing or 0 runtime
+
+```{r}
+movies_runtime <- movies_selected %>% 
+  mutate(runtime = na_if(runtime, 0))
+```
+
+```{r}
+movies_runtime %>% 
+  summarise(sum(is.na(runtime)))
+```
+
+
+5.
+
+```{r}
+movies_imputed <- movies_runtime %>% 
+  mutate(runtime = coalesce(runtime, mean(runtime, na.rm = TRUE)))
+
+movies_imputed %>% 
+  summarise(sum(is.na(runtime)))
+```
+
+6.
+
+```{r}
+movies_imputed %>% 
+  slice_min(order_by  = runtime, n = 10)
+
+movies_imputed %>% 
+  slice_max(order_by  = runtime, n = 10)
+```
+
+7.
+
+```{r}
+movies_imputed <- movies_imputed %>% 
+  mutate(budget = if_else(budget < 100, mean(budget), budget))
+```
+
+
+
+## Extension
+
+
+1.
+
+```{r}
+movie_budgets <- movies_imputed %>% 
+  mutate(budget_type = case_when(budget < 12e6 ~ "Small budget",
+                                 budget >= 12e6 & budget <= 40e6 ~ "Medium budget",
+                                 budget > 40e6 ~ "Big budget"))
+```
+
+
+2.
+
+```{r}
+movies %>% 
+  summarise(across(where(is.character), ~sum(is.na(.))))
+```
+# For if only `NA` values count as missing
+```{r}
+movies %>% 
+  summarise(across(where(is.numeric), ~sum(is.na(.))))
+```
+
+# For if 0 as runtime values count as missing but budget as 0 is ok
+```{r}
+movies %>% 
+  mutate(runtime = na_if(runtime, 0)) %>% 
+  summarise(across(where(is.numeric), ~sum(is.na(.))))
+```
+
+# For if 0 as runtime or budget values count as missing
+```{r}
+movies %>% 
+  mutate(runtime = na_if(runtime, 0),
+         budget = na_if(budget, 0)) %>% 
+  summarise(across(where(is.numeric), ~sum(is.na(.))))
+```
+
+
+# For if 0 as runtime values and budget values less than 100 count as missing
+```{r}
+movies %>% 
+  mutate(runtime = na_if(runtime, 0),
+         budget = if_else(budget < 100, NA, budget)) %>% 
+  summarise(across(where(is.numeric), ~sum(is.na(.))))
+```
+
