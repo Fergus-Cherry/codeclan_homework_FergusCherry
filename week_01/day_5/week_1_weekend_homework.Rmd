@@ -1,0 +1,167 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(readr)
+library(stringr)
+```
+
+```{r}
+books <- read_csv("data/books.csv")
+
+books
+```
+
+```{r}
+#view(books)
+```
+
+```{r}
+#dim(books)
+#names(books)
+#glimpse(books)
+```
+
+```{r}
+books %>% 
+  summarise(across(.cols = everything(), .fns = ~sum(is.na(.))))
+```
+
+```{r}
+books_with_pages <- books %>% 
+  filter(num_pages > 0)
+```
+
+
+
+```{r}
+books %>% 
+  distinct(language_code)
+```
+
+Finds the average rating of all books.
+```{r}
+books_with_pages %>% 
+  select(title, average_rating) %>% 
+  summarise(avg_avg_rating = mean(average_rating))
+```
+
+Finds the average rating of each language.
+```{r}
+books_with_pages %>% 
+  group_by(language_code) %>% 
+  summarise(avg_avg_rating = mean(average_rating)) %>% 
+  arrange(desc(avg_avg_rating))
+```
+
+Finds the average rating of each variety of English.
+```{r}
+books_with_pages %>% 
+  group_by(language_code) %>% 
+  filter(str_detect(language_code, "en")) %>% 
+  summarise(avg_avg_rating = mean(average_rating)) %>% 
+  arrange(desc(avg_avg_rating))
+```
+
+Finds the average rating of books in English.
+```{r}
+books_with_pages %>% 
+  filter(str_detect(language_code, "en")) %>% 
+  summarise(avg_avg_rating = mean(average_rating)) %>% 
+  pull(avg_avg_rating)
+```
+
+Finds the average rating of books not in English.
+```{r}
+books_with_pages %>% 
+  filter(!str_detect(language_code, "en")) %>% 
+  summarise(avg_avg_rating = mean(average_rating)) %>% 
+  pull(avg_avg_rating)
+```
+
+Finds the number of books with a rating of 0.
+```{r}
+books %>% 
+  filter(average_rating == 0) %>% 
+  summarise(n = n()) %>% 
+  pull(n)
+```
+
+```{r}
+books %>% 
+  filter(text_reviews_count == 0 &
+           average_rating == 0) %>% 
+  summarise(n = n()) %>% 
+  pull(n)
+```
+
+
+Finds the average rating for languages with more than a single book.
+```{r}
+books_with_pages %>% 
+  group_by(language_code) %>% 
+  filter(n() > 1) %>% 
+  summarise(avg_avg_rating = mean(average_rating)) %>% 
+  arrange(desc(avg_avg_rating))
+```
+
+
+Finds the average number of pages.
+```{r}
+books_with_pages %>% 
+  summarise(avg_pages = mean(num_pages))
+```
+
+Finds the average number of pages for each language.
+```{r}
+books_with_pages %>% 
+  group_by(language_code) %>% 
+  summarise(avg_pages = mean(num_pages)) %>% 
+  arrange(desc(avg_pages))
+```
+
+Finds the number of books for each language.
+```{r}
+books %>% 
+  group_by(language_code) %>% 
+  summarise(n = n())
+```
+
+Finds the number of books in English and the number of books not in English.
+```{r}
+books %>% 
+  filter(str_detect(language_code, "en")) %>% 
+  summarise(n = n()) %>% 
+  pull(n)
+
+books %>% 
+  filter(!str_detect(language_code, "en")) %>% 
+  summarise(n = n()) %>% 
+  pull(n)
+```
+Finds the books with no pages.
+```{r}
+books %>% 
+  filter(num_pages == 0) %>% 
+  select(title)
+```
+
+
+## Summary of findings
+
+There are 76 books listed with a page count of 0, which have been discounted from
+most checks.
+A vast majority of the books listed are in English, with the non-English books
+having a slightly higher average rating.
+The highest average rating for a language is Welsh, with the lowest nonzero average
+rating being for Galician.
+If languages with only one listed book are removed, the highest rated language
+is Chinese, and the lowest rated is Swedish.
+Canadian English is the highest rated English and middle English is the lowest.
+25 books have an average rating of 0, which is unlikely but still possible if it's
+a really bad book. 24 of these have no text reviews.
+Middle English has the highest average page count and Welsh has the lowest.
