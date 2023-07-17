@@ -1,0 +1,116 @@
+---
+title: "Joins and tidyr Homework"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(janitor)
+```
+## MVP
+### 1.1
+
+1.
+
+```{r}
+card_base         <- read_csv("data/CardBase.csv")
+customer_base     <- read_csv("data/CustomerBase.csv")
+fraud_base        <- read_csv("data/FraudBase.csv")
+transaction_base  <- read_csv("data/TransactionBase.csv")
+
+
+card_base         <- clean_names(card_base)
+customer_base     <- clean_names(customer_base)
+fraud_base        <- clean_names(fraud_base)
+transaction_base  <- clean_names(transaction_base)
+
+card_base
+customer_base
+fraud_base
+transaction_base
+```
+
+```{r}
+names(card_base)
+names(customer_base)
+names(fraud_base)
+names(transaction_base)
+```
+
+2.
+
+```{r}
+cards_customers <- left_join(card_base, customer_base, "cust_id")
+cards_customers
+```
+
+3. the fraud and transaction tables have a one-to-one relation
+
+```{r}
+fraud_transaction <- full_join(fraud_base, transaction_base, "transaction_id")
+fraud_transaction
+```
+
+4.
+```{r}
+used_cards <- semi_join(card_base, transaction_base, c("card_number" = "credit_card_id"))
+used_cards
+```
+
+### 1.2
+
+5.
+```{r}
+hat_observations <- read_csv("data/hat_observations.csv")
+
+hat_observations_split <- hat_observations %>% 
+  separate(observation, c("colour", "type"), sep = ",")
+
+hat_observations_split
+```
+
+6.
+```{r}
+hat_observations_dates <- hat_observations_split %>% 
+  unite(col = "date", c(year, month, day), sep = "-")
+hat_observations_dates %>% 
+  filter(type == "beret") %>% 
+  group_by(date) %>% 
+  summarise(observed_beret = sum(observation_count)) %>% 
+  slice_max(observed_beret, n = 1) %>% 
+  pull(date)
+```
+
+## Ext
+### 2.1
+
+1.
+```{r}
+full_fraud <- full_join(card_base, customer_base, "cust_id") %>% 
+  full_join(., transaction_base, c("card_number" = "credit_card_id")) %>% 
+  right_join(., fraud_base, "transaction_id")
+full_fraud
+```
+
+### 2.2
+
+2.
+```{r}
+exam_scores <- read_csv("data/exam_scores.csv")
+exam_long <- exam_scores %>% 
+  pivot_longer(
+    cols = c(exam_Q1:exam_Q10),
+    names_to = "exam_question",
+    values_to = "score"
+  )
+exam_long
+exam_long_trimmed <- exam_long %>% 
+  separate(
+    col = exam_question,
+    into = c("superfluous", "exam_question"),
+    sep = 6
+  ) %>% 
+  select(id, exam_question, score)
+exam_long_trimmed
+```
+
