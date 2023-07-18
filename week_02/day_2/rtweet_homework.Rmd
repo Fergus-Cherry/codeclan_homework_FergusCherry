@@ -1,0 +1,97 @@
+---
+title: "rtweet homework"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+```
+## MVP
+1.
+
+```{r}
+code_clan_tweets <- read_csv("data/code_clan_tweets.csv")
+```
+```{r}
+dim(code_clan_tweets)
+names(code_clan_tweets)
+```
+
+2.
+```{r}
+code_clan_tweets %>% 
+  filter(is_quote == FALSE) %>% 
+  summarise(total_favourites = sum(favorite_count))
+```
+
+3.
+```{r}
+code_clan_tweets %>% 
+  filter(is_quote == FALSE) %>%
+  group_by(source) %>% 
+  summarise(mean_retweets = mean(retweet_count))
+```
+
+4.
+```{r}
+code_clan_tweets %>% 
+  mutate(media_type = if_else(is.na(media_type), "text", media_type)) %>% 
+  group_by(media_type) %>% 
+  summarise(total_favourites = sum(favorite_count)) %>% 
+  arrange(desc(total_favourites))
+```
+
+5.
+```{r}
+code_clan_tweets %>% 
+  summarise(
+    avg_char_by_count = mean(str_count(text)),
+    avg_char_by_width = mean(display_text_width)
+  )
+```
+
+6.
+```{r}
+code_clan_info <- read_csv("data/code_clan_info.csv")
+```
+
+```{r}
+full_join(code_clan_tweets, code_clan_info, "tweet_id")
+```
+
+7.
+```{r}
+codeclan_hashtags <- full_join(
+  code_clan_tweets, 
+  code_clan_info, 
+  "tweet_id"
+  ) %>% 
+  select(tweet_id, hashtags)
+
+codeclan_hashtags <- codeclan_hashtags %>% 
+  mutate(hashtags = str_to_lower(hashtags)) %>% 
+  filter(!is.na(hashtags))
+```
+
+## Extensions
+8.
+```{r}
+codeclan_hashtags %>% 
+  filter(str_detect(hashtags, "c\\("))
+```
+
+9.
+```{r}
+code_clan_tweets %>% 
+  filter(str_detect(text, "Edinburgh")) %>% 
+  summarise(edinburgh_mentions = n())
+```
+
+10.
+```{r}
+code_clan_tweets %>% 
+  mutate(victims = str_extract_all(text, "@[a-zA-Z0-9_]+"), sep = ", ") %>% 
+  pull(victims) %>% 
+  unlist
+```
+
