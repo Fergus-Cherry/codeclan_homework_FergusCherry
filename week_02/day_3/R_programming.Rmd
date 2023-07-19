@@ -1,0 +1,156 @@
+---
+title: "Programming in R"
+output: html_notebook
+---
+
+
+## MVP
+
+### 1
+
+```{r}
+weather_forecast <- list(
+  Thursday = list(
+    temperature = 17, rain_chance = 58, wind_speed = 10),
+  Friday = list(
+    temperature = 16, rain_chance = 67, wind_speed = 11),
+  Saturday = list(
+    temperature = 15, rain_chance = 70, wind_speed = 10)
+  )
+)
+```
+
+### 2
+
+```{r}
+weather_forecast$Thursday$rain_chance
+weather_forecast$Friday$wind_speed
+weather_forecast$Thursday$temperature
+```
+
+### 3
+
+```{r}
+temp_m <- matrix(c(18, 17, 16, 17, 17, 18, 18, 19, 18, 19, 19, 19, 19, 19), nrow = 2, ncol = 7)
+temp_m
+```
+
+### 4
+
+```{r}
+temp_m[2,3]
+temp_m[2,]
+temp_m[1:2, c(1, 3, 5)]
+```
+
+### 5
+
+```{r}
+strange_function <- function(strange_input) {
+  if (is.character(strange_input)){
+    return(paste0("The answer is:", strange_input))
+  } else {
+    if (strange_input < 10) {
+      return(strange_input)
+    } else {
+      return(strange_input / 10)
+    }
+  }
+}
+
+strange_function("dsjlj")
+strange_function(3.2)
+strange_function(pi)
+strange_function(10 * pi)
+strange_function(76)
+strange_function(2507)
+```
+
+### 6
+
+```{r}
+comp_func <- function(vec1, vec2){
+  if (
+    all(sort(vec1) == sort(vec2))
+  ) {
+    if (
+      all(vec1 == vec2)
+    ){
+      return("Exactly the same")
+    } else {
+      return("The same")
+    }
+  } else {
+    return("Different")
+  }
+}
+
+
+vec1 <- c(1, 5, 7, 3)
+vec2 <- c(1, 5, 7, 3)
+
+comp_func(vec1, vec2)
+
+vec1 <- c(5, 7, 3, 1)
+vec2 <- c(1, 5, 7, 3)
+
+comp_func(vec1, vec2)
+
+vec1 <- c(5, 7, 3)
+vec2 <- c(1, 5, 7, 3)
+
+comp_func(vec1, vec2)
+```
+
+## Ext
+
+### 7
+
+I'm assuming you don't just want us to create a matrix.
+```{r}
+for (x in 1:12) {
+  thingy <- c(as.character(x * 1))
+  for (y in 2:12) {
+    thingy <- paste(thingy, as.character(x * y), sep = ", ")
+  }
+  print(thingy)
+}
+```
+If you do just want a matrix, we did that in the class
+```{r}
+thingy <- matrix(nrow = 12, ncol = 12)
+for (x in 1:12) {
+  for (y in 1:12) {
+    thingy[x, y] <- x * y
+  }
+}
+thingy
+```
+
+### 8
+
+```{r}
+ascii_hist <- function(maybe_art){
+  unique_elements <- sort(unique(maybe_art))
+  count_each <- rep(0, length(unique_elements))
+  for (i in maybe_art) {
+    for (x in 1:length(unique_elements)) {
+      if (i == unique_elements[x]) {
+        count_each[x] <- count_each[x] + 1
+      }
+    }
+  }
+  for (x in 1:length(unique_elements)) {
+    cat(unique_elements[x], "| ")
+    for (y in 1:count_each[x]) {
+      cat("*")
+    }
+    cat("\n")
+  }
+}
+
+weird_input <- c(1, 2, 3, 4, 5, 1, 3, 4, 5, 1, 3, 4, 4, 3, 3, 3, 3)
+
+ascii_hist(weird_input)
+```
+
