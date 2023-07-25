@@ -87,7 +87,7 @@ WHERE NOT (first_name IS NULL OR last_name IS NULL OR department IS null);
 
 --17
 SELECT concat(first_name, ' ', last_name, ' - ', department,
-	' (joined ', to_char(start_date, 'Month'), ' ', 
+	' (joined ', to_char(start_date, 'FMMonth'), ' ', 
 	EXTRACT(YEAR FROM start_date), ')') AS badge_label
 FROM employees
 WHERE NOT (first_name IS NULL 
